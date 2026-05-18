@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutrio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-light: #a0a0a0;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5f0;
+    --accent-mid: #52b788;
+    --warn: #e76f51;
+    --warn-light: #fdf0ec;
+    --border: #ebebeb;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --nav-h: 72px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e8e4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 48px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.6);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    height: 44px;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-time { font-size: 15px; font-weight: 600; color: var(--text); }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons span { font-size: 13px; color: var(--text); }
+
+  /* HEADER */
+  .app-header {
+    background: var(--white);
+    padding: 14px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .app-logo span { color: var(--text); }
+  .profile-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .profile-btn:hover { background: #d2ede4; }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding-bottom: 8px;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* TAB PAGES */
+  .tab-page { display: none; padding: 16px; }
+  .tab-page.active { display: block; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    height: var(--nav-h);
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-shrink: 0;
+    padding: 0 8px;
+    padding-bottom: 8px;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 6px 12px; border-radius: 12px;
+    transition: all 0.2s; background: none; border: none;
+    flex: 1;
+  }
+  .nav-item:hover { background: var(--accent-light); }
+  .nav-item.active { background: var(--accent-light); }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
+  .nav-item.active .nav-label { color: var(--accent); font-weight: 600; }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .section-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+
+  /* WARNING CARD */
+  .warn-card {
+    background: var(--warn-light);
+    border: 1px solid #f4c5b8;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .warn-card-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--warn);
+    margin-bottom: 10px;
+  }
+  .warn-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(231,111,81,0.1);
+    font-size: 13px;
+  }
+  .warn-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .warn-item-name { font-weight: 500; color: var(--text); }
+  .warn-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; background: var(--warn); color: white;
+  }
+  .warn-badge.yellow { background: #f4a261; }
+
+  /* STORAGE FILTER */
+  .storage-filter {
+    display: flex; gap: 8px; margin-bottom: 16px;
+    overflow-x: auto; padding-bottom: 2px;
+  }
+  .storage-filter::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--white); cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    white-space: nowrap; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn:hover { border-color: var(--accent-mid); color: var(--accent); }
+  .filter-btn.active {
+    background: var(--accent); border-color: var(--accent);
+    color: white;
+  }
+  .filter-btn span { font-size: 15px; }
+
+  /* FOOD ITEM CARD */
+  .food-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s;
+  }
+  .food-card:active { transform: scale(0.99); }
+  .food-card-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .food-info {}
+  .food-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .food-brand { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .food-meta { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .food-tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 20px;
+    background: var(--accent-light); color: var(--accent); font-weight: 500;
+  }
+  .food-tag.exp { background: var(--warn-light); color: var(--warn); }
+  .food-tag.ok { background: #edf7ed; color: #2d7a2e; }
+  .food-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; transition: all 0.2s; color: var(--text-secondary);
+  }
+  .icon-btn:hover { border-color: var(--warn); background: var(--warn-light); color: var(--warn); }
+  .icon-btn.trash:hover { border-color: #c0392b; background: #fdecea; }
+  
+  /* VERBRAUCHEN ROW */
+  .consume-row {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .consume-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .consume-input {
+    flex: 1; height: 32px; border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 0 10px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); background: var(--bg);
+    transition: border-color 0.2s; outline: none;
+  }
+  .consume-input:focus { border-color: var(--accent-mid); }
+  .consume-unit { font-size: 12px; color: var(--text-secondary); }
+  .consume-btn {
+    height: 32px; padding: 0 12px; border-radius: 8px;
+    background: var(--accent); border: none; color: white;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .consume-btn:hover { background: #235c41; }
+
+  /* SCAN BUTTON */
+  .scan-fab {
+    width: 100%; padding: 14px;
+    background: var(--accent); border: none; border-radius: var(--radius);
+    color: white; font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; margin-bottom: 16px;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+    transition: all 0.2s;
+  }
+  .scan-fab:hover { background: #235c41; transform: translateY(-1px); }
+
+  /* CAMERA MODAL */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 100;
+    display: none; align-items: flex-end;
+    border-radius: 48px; overflow: hidden;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    width: 100%; background: var(--white);
+    border-radius: 28px 28px 0 0;
+    padding: 20px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle {
+    width: 36px; height: 4px; background: var(--border);
+    border-radius: 2px; margin: 0 auto 16px;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+  .camera-viewfinder {
+    width: 100%; height: 220px; background: #111;
+    border-radius: var(--radius); overflow: hidden;
+    position: relative; margin-bottom: 16px;
+  }
+  .camera-viewfinder video { width: 100%; height: 100%; object-fit: cover; }
+  .camera-viewfinder .scan-line {
+    position: absolute; top: 50%; left: 10%; right: 10%;
+    height: 2px; background: var(--accent-mid);
+    box-shadow: 0 0 8px var(--accent-mid);
+    animation: scanMove 2s ease-in-out infinite;
+  }
+  @keyframes scanMove {
+    0% { top: 20%; } 50% { top: 80%; } 100% { top: 20%; }
+  }
+  .camera-frame-corner {
+    position: absolute; width: 20px; height: 20px;
+    border-color: var(--accent-mid); border-style: solid; border-width: 0;
+  }
+  .corner-tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; border-radius: 3px 0 0 0; }
+  .corner-tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 3px 0 0; }
+  .corner-bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 3px; }
+  .corner-br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 3px 0; }
+  .camera-hint { font-size: 12px; color: var(--text-secondary); text-align: center; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; }
+  .btn-secondary {
+    flex: 1; padding: 13px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: none;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; color: var(--text);
+  }
+  .btn-primary {
+    flex: 2; padding: 13px; border-radius: var(--radius-sm);
+    background: var(--accent); border: none; color: white;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* RECEIPT MODAL */
+  .receipt-area {
+    width: 100%; height: 180px; border: 2px dashed var(--border);
+    border-radius: var(--radius); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    color: var(--text-secondary); cursor: pointer; margin-bottom: 16px;
+    background: var(--bg); transition: border-color 0.2s;
+  }
+  .receipt-area:hover { border-color: var(--accent-mid); }
+  .receipt-area .icon { font-size: 32px; }
+  .receipt-area p { font-size: 13px; }
+
+  /* SHOPPING LIST */
+  .add-row {
+    display: flex; gap: 10px; margin-bottom: 16px;
+  }
+  .add-input {
+    flex: 1; height: 44px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0 14px;
+    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color 0.2s;
+  }
+  .add-input:focus { border-color: var(--accent-mid); }
+  .add-btn {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    background: var(--accent); border: none; color: white;
+    font-size: 22px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .add-btn:hover { background: #235c41; }
+
+  .shop-section-title {
+    font-size: 11px; font-weight: 600; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 16px 0 8px;
+  }
+  .shop-item {
+    background: var(--white); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: var(--shadow);
+  }
+  .shop-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s; background: none;
+    font-size: 12px; color: transparent;
+  }
+  .shop-item.checked .shop-check {
+    background: var(--accent-mid); border-color: var(--accent-mid); color: white;
+  }
+  .shop-item-info { flex: 1; }
+  .shop-item-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .shop-item.checked .shop-item-name { text-decoration: line-through; color: var(--text-light); }
+  .shop-item-brand { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .shop-item-qty { font-size: 12px; color: var(--text-secondary); }
+  .shop-delete-btn {
+    width: 28px; height: 28px; border: none; background: none;
+    cursor: pointer; font-size: 16px; color: var(--text-light);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; transition: all 0.2s;
+  }
+  .shop-delete-btn:hover { background: var(--warn-light); color: var(--warn); }
+
+  /* AUTO-ADD TOAST */
+  .toast {
+    position: absolute; bottom: 90px; left: 16px; right: 16px;
+    background: var(--text); color: white; border-radius: var(--radius);
+    padding: 14px 16px; z-index: 50;
+    display: none; animation: toastIn 0.3s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  .toast.show { display: block; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .toast-msg { font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
+  .toast-actions { display: flex; gap: 8px; }
+  .toast-btn {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px;
+    font-weight: 600; cursor: pointer; border: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .toast-yes { background: var(--accent-mid); color: white; }
+  .toast-no { background: rgba(255,255,255,0.15); color: white; }
+
+  /* RECIPES */
+  .recipe-card {
+    background: var(--white); border-radius: var(--radius);
+    margin-bottom: 12px; overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer;
+  }
+  .recipe-header {
+    padding: 16px; display: flex; align-items: flex-start;
+    gap: 12px; justify-content: space-between;
+  }
+  .recipe-emoji { font-size: 36px; flex-shrink: 0; line-height: 1; }
+  .recipe-info { flex: 1; }
+  .recipe-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .recipe-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .recipe-meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .recipe-tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 20px;
+    background: var(--accent-light); color: var(--accent); font-weight: 500;
+  }
+  .recipe-tag.urgent { background: var(--warn-light); color: var(--warn); }
+  .recipe-chevron { font-size: 18px; color: var(--text-light); flex-shrink: 0; margin-top: 2px; transition: transform 0.3s; }
+  .recipe-card.open .recipe-chevron { transform: rotate(180deg); }
+
+  .recipe-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+    border-top: 0px solid var(--border);
+  }
+  .recipe-card.open .recipe-body {
+    max-height: 600px;
+    border-top: 1px solid var(--border);
+  }
+  .recipe-body-inner { padding: 16px; }
+  .recipe-section { margin-bottom: 14px; }
+  .recipe-section-title {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+  }
+  .ingredient-list { list-style: none; }
+  .ingredient-item {
+    display: flex; justify-content: space-between;
+    font-size: 13px; padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .ingredient-item:last-child { border-bottom: none; }
+  .ingredient-amount { color: var(--text-secondary); }
+  .step-item {
+    display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start;
+  }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .recipe-cook-meta {
+    display: flex; gap: 16px; padding: 10px 0;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .cook-stat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+  .cook-stat strong { color: var(--text); font-size: 13px; }
+
+  /* MEALPLAN */
+  .mealplan-btn {
+    width: 100%; padding: 14px; border: 2px dashed var(--accent-mid);
+    border-radius: var(--radius); background: var(--accent-light);
+    color: var(--accent); font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    margin-bottom: 16px; transition: all 0.2s;
+  }
+  .mealplan-btn:hover { background: #d2ede4; }
+  .day-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+  .day-label {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+  }
+  .meal-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .meal-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .meal-type { font-size: 11px; font-weight: 600; color: var(--text-secondary); width: 60px; flex-shrink: 0; }
+  .meal-name { color: var(--text); font-weight: 500; }
+
+  /* PROFILE PANEL */
+  .profile-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 200; display: none; border-radius: 48px; overflow: hidden;
+  }
+  .profile-overlay.open { display: flex; align-items: flex-start; }
+  .profile-panel {
+    width: 80%; height: 100%; background: var(--white);
+    padding: 52px 20px 20px; overflow-y: auto;
+    animation: slideRight 0.3s ease;
+  }
+  @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  .profile-close {
+    position: absolute; top: 52px; right: 20px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg); border: none; cursor: pointer;
+    font-size: 18px; display: flex; align-items: center; justify-content: center;
+    z-index: 201;
+  }
+  .profile-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--accent-light); display: flex; align-items: center;
+    justify-content: center; font-size: 28px; margin-bottom: 12px;
+  }
+  .profile-name { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+  .profile-email { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .setting-group { margin-bottom: 20px; }
+  .setting-group-title {
+    font-size: 11px; font-weight: 700; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+  }
+  .setting-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .setting-item:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; color: var(--text); font-weight: 500; }
+  .setting-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .toggle {
+    width: 44px; height: 24px; border-radius: 12px;
+    background: var(--border); position: relative; cursor: pointer;
+    border: none; transition: background 0.2s;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: white; transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* INTOLERANCE CHIPS */
+  .chip-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .chip {
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--border); background: none; cursor: pointer;
+    color: var(--text-secondary); transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .chip.selected { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-secondary);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* FOOD COUNT BADGE */
+  .storage-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 10px; font-weight: 700; margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <span>●●●</span>
+      <span>WiFi</span>
+      <span>🔋</span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="app-logo">nutri<span>o</span></div>
+    <button class="profile-btn" onclick="toggleProfile()">👤</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TAB: SCANNEN -->
+    <div class="tab-page active" id="tab-scan">
+      <div class="section-title">Hinzufügen</div>
+      <div class="section-sub">Scanne Produkte oder deinen Kassenzettel</div>
+
+      <button class="scan-fab" onclick="openModal('camera-modal')">
+        📷 Barcode scannen
+      </button>
+
+      <div class="receipt-area" onclick="openModal('receipt-modal')">
+        <div class="icon">🧾</div>
+        <p>Kassenzettel fotografieren</p>
+        <p style="font-size:11px; color: var(--text-light)">Tippen zum Öffnen</p>
+      </div>
+
+      <div class="section-sub" style="margin-top:16px; margin-bottom:12px;">Manuell hinzufügen</div>
+      <div class="add-row">
+        <input class="add-input" placeholder="z.B. Alpro Hafermilch 1L" id="manual-input">
+        <button class="add-btn" onclick="addManualItem()">+</button>
+      </div>
+      <div id="manual-added" style="font-size:13px; color:var(--accent); display:none; padding: 8px 0;">✓ Produkt hinzugefügt!</div>
+    </div>
+
+    <!-- TAB: LEBENSMITTEL -->
+    <div class="tab-page" id="tab-food">
+      <!-- WARNUNGEN -->
+      <div class="warn-card">
+        <div class="warn-card-header">⚠️ Läuft bald ab</div>
+        <div class="warn-item">
+          <div>
+            <div class="warn-item-name">Emmentaler – Züger</div>
+            <div style="font-size:11px; color:var(--text-secondary)">300g · Kühlschrank</div>
+          </div>
+          <span class="warn-badge">Morgen</span>
+        </div>
+        <div class="warn-item">
+          <div>
+            <div class="warn-item-name">Frische Milch – Weihenstephan</div>
+            <div style="font-size:11px; color:var(--text-secondary)">1L · Kühlschrank</div>
+          </div>
+          <span class="warn-badge yellow">3 Tage</span>
+        </div>
+        <div class="warn-item">
+          <div>
+            <div class="warn-item-name">Joghurt natur – Danone</div>
+            <div style="font-size:11px; color:var(--text-secondary)">500g · Kühlschrank</div>
+          </div>
+          <span class="warn-badge yellow">4 Tage</span>
+        </div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="storage-filter">
+        <button class="filter-btn active" onclick="filterStorage(this,'all')"><span>🍽️</span> Alle</button>
+        <button class="filter-btn" onclick="filterStorage(this,'fridge')"><span>❄️</span> Kühlschrank</button>
+        <button class="filter-btn" onclick="filterStorage(this,'freezer')"><span>🧊</span> Gefrierschrank</button>
+        <button class="filter-btn" onclick="filterStorage(this,'shelf')"><span>🗄️</span> Schrank</button>
+      </div>
+
+      <!-- FOOD ITEMS -->
+      <div id="food-list">
+        <!-- KÜHLSCHRANK -->
+        <div data-storage="fridge">
+          <div class="shop-section-title">Kühlschrank</div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Emmentaler</div>
+                <div class="food-brand">Züger · 300g</div>
+                <div class="food-meta">
+                  <span class="food-tag exp">MHD: morgen</span>
+                  <span class="food-tag">Käse</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-1">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-1', 300, 'g', 'Emmentaler – Züger')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Frische Vollmilch</div>
+                <div class="food-brand">Weihenstephan · 1L</div>
+                <div class="food-meta">
+                  <span class="food-tag exp">MHD: 3 Tage</span>
+                  <span class="food-tag">Milchprodukt</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-2">
+              <span class="consume-unit">ml</span>
+              <button class="consume-btn" onclick="consumeItem('ci-2', 1000, 'ml', 'Frische Vollmilch – Weihenstephan')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Joghurt natur</div>
+                <div class="food-brand">Danone · 500g</div>
+                <div class="food-meta">
+                  <span class="food-tag exp">MHD: 4 Tage</span>
+                  <span class="food-tag">Milchprodukt</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-3">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-3', 500, 'g', 'Joghurt natur – Danone')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Hähnchenbrustfilet</div>
+                <div class="food-brand">Wiesenhof · 400g</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 8 Tage</span>
+                  <span class="food-tag">Fleisch</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-4">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-4', 400, 'g', 'Hähnchenbrustfilet – Wiesenhof')">OK</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GEFRIERSCHRANK -->
+        <div data-storage="freezer">
+          <div class="shop-section-title">Gefrierschrank</div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Tiefkühlerbsen</div>
+                <div class="food-brand">Birds Eye · 750g</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 8 Mon.</span>
+                  <span class="food-tag">Gemüse</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-5">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-5', 750, 'g', 'Tiefkühlerbsen – Birds Eye')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Pizzateig</div>
+                <div class="food-brand">Dr. Oetker · 2 Stück</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 3 Mon.</span>
+                  <span class="food-tag">Teig</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-6">
+              <span class="consume-unit">Stk</span>
+              <button class="consume-btn" onclick="consumeItem('ci-6', 2, 'Stk', 'Pizzateig – Dr. Oetker')">OK</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHRANK -->
+        <div data-storage="shelf">
+          <div class="shop-section-title">Schrank</div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Penne Rigate</div>
+                <div class="food-brand">Barilla · 500g</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 2 Jahre</span>
+                  <span class="food-tag">Pasta</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-7">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-7', 500, 'g', 'Penne Rigate – Barilla')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Passierte Tomaten</div>
+                <div class="food-brand">Mutti · 400g</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 1 Jahr</span>
+                  <span class="food-tag">Konserve</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-8">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-8', 400, 'g', 'Passierte Tomaten – Mutti')">OK</button>
+            </div>
+          </div>
+
+          <div class="food-card">
+            <div class="food-card-top">
+              <div class="food-info">
+                <div class="food-name">Basmati Reis</div>
+                <div class="food-brand">Uncle Ben's · 1kg</div>
+                <div class="food-meta">
+                  <span class="food-tag ok">MHD: 18 Mon.</span>
+                  <span class="food-tag">Getreide</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button class="icon-btn trash" onclick="deleteItem(this)" title="Löschen">🗑️</button>
+              </div>
+            </div>
+            <div class="consume-row">
+              <span class="consume-label">Verbraucht:</span>
+              <input class="consume-input" type="number" placeholder="0" id="ci-9">
+              <span class="consume-unit">g</span>
+              <button class="consume-btn" onclick="consumeItem('ci-9', 1000, 'g', 'Basmati Reis – Uncle Ben\'s')">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: EINKAUFSLISTE -->
+    <div class="tab-page" id="tab-shop">
+      <div class="section-title">Einkaufsliste</div>
+      <div class="section-sub">Manuell hinzufügen oder automatisch verwalten</div>
+
+      <div class="add-row">
+        <input class="add-input" placeholder="Produkt hinzufügen…" id="shop-input">
+        <button class="add-btn" onclick="addShopItem()">+</button>
+      </div>
+
+      <div id="shop-list">
+        <div class="shop-section-title">Vorgeschlagen</div>
+        <div class="shop-item" id="si-1">
+          <button class="shop-check" onclick="toggleCheck(this)">✓</button>
+          <div class="shop-item-info">
+            <div class="shop-item-name">Emmentaler</div>
+            <div class="shop-item-brand">Züger · 300g</div>
+          </div>
+          <span class="shop-item-qty">1×</span>
+          <button class="shop-delete-btn" onclick="deleteShopItem(this)">🗑️</button>
+        </div>
+        <div class="shop-item" id="si-2">
+          <button class="shop-check" onclick="toggleCheck(this)">✓</button>
+          <div class="shop-item-info">
+            <div class="shop-item-name">Frische Vollmilch</div>
+            <div class="shop-item-brand">Weihenstephan · 1L</div>
+          </div>
+          <span class="shop-item-qty">1×</span>
+          <button class="shop-delete-btn" onclick="deleteShopItem(this)">🗑️</button>
+        </div>
+
+        <div class="shop-section-title" id="manual-section-title" style="display:none">Manuell hinzugefügt</div>
+        <div id="manual-shop-items"></div>
+      </div>
+    </div>
+
+    <!-- TAB: REZEPTE -->
+    <div class="tab-page" id="tab-recipes">
+      <div class="section-title">Rezeptvorschläge</div>
+      <div class="section-sub">Basierend auf dem was du hast & was bald abläuft</div>
+
+      <button class="mealplan-btn" onclick="toggleMealplan()">🗓️ Meal Plan für diese Woche erstellen</button>
+
+      <div id="mealplan-section" style="display:none; margin-bottom:16px;">
+        <div class="shop-section-title">Dein Wochenplan</div>
+        <div class="day-card">
+          <div class="day-label">Montag</div>
+          <div class="meal-row"><span class="meal-type">Frühstück</span><span class="meal-name">Joghurt mit Früchten</span></div>
+          <div class="meal-row"><span class="meal-type">Mittagessen</span><span class="meal-name">Hähnchen mit Reis</span></div>
+          <div class="meal-row"><span class="meal-type">Abendessen</span><span class="meal-name">Pasta Pomodoro</span></div>
+        </div>
+        <div class="day-card">
+          <div class="day-label">Dienstag</div>
+          <div class="meal-row"><span class="meal-type">Frühstück</span><span class="meal-name">Müsli mit Milch</span></div>
+          <div class="meal-row"><span class="meal-type">Mittagessen</span><span class="meal-name">Emmentaler-Toast</span></div>
+          <div class="meal-row"><span class="meal-type">Abendessen</span><span class="meal-name">Hähnchenpfanne mit Erbsen</span></div>
+        </div>
+      </div>
+
+      <div class="shop-section-title">Rezepte für dich</div>
+
+      <!-- RECIPE 1 -->
+      <div class="recipe-card" onclick="toggleRecipe(this)">
+        <div class="recipe-header">
+          <div class="recipe-emoji">🍝</div>
+          <div class="recipe-info">
+            <div class="recipe-name">Pasta Pomodoro</div>
+            <div class="recipe-desc">Klassisch, schnell & mit dem was du hast</div>
+            <div class="recipe-meta">
+              <span class="recipe-tag urgent">⚠ Tomaten aufbrauchen</span>
+              <span class="recipe-tag">20 Min.</span>
+            </div>
+          </div>
+          <div class="recipe-chevron">⌄</div>
+        </div>
+        <div class="recipe-body">
+          <div class="recipe-body-inner">
+            <div class="recipe-cook-meta">
+              <div class="cook-stat"><span>⏱</span><div><strong>20 Min.</strong><br>gesamt</div></div>
+              <div class="cook-stat"><span>👤</span><div><strong>2</strong><br>Personen</div></div>
+              <div class="cook-stat"><span>⚡</span><div><strong>Einfach</strong><br>Schwierigkeit</div></div>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zutaten</div>
+              <ul class="ingredient-list">
+                <li class="ingredient-item"><span>Penne Rigate – Barilla</span><span class="ingredient-amount">250g</span></li>
+                <li class="ingredient-item"><span>Passierte Tomaten – Mutti</span><span class="ingredient-amount">400g</span></li>
+                <li class="ingredient-item"><span>Knoblauch</span><span class="ingredient-amount">2 Zehen</span></li>
+                <li class="ingredient-item"><span>Olivenöl</span><span class="ingredient-amount">3 EL</span></li>
+                <li class="ingredient-item"><span>Basilikum</span><span class="ingredient-amount">nach Geschmack</span></li>
+                <li class="ingredient-item"><span>Salz & Pfeffer</span><span class="ingredient-amount">nach Geschmack</span></li>
+              </ul>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zubereitung</div>
+              <div class="step-item"><div class="step-num">1</div><div class="step-text">Pasta in reichlich Salzwasser al dente kochen (ca. 10 Min.).</div></div>
+              <div class="step-item"><div class="step-num">2</div><div class="step-text">Knoblauch fein hacken und in Olivenöl bei mittlerer Hitze 1 Min. anschwitzen.</div></div>
+              <div class="step-item"><div class="step-num">3</div><div class="step-text">Passierte Tomaten dazugeben, mit Salz & Pfeffer würzen, 8 Min. köcheln lassen.</div></div>
+              <div class="step-item"><div class="step-num">4</div><div class="step-text">Abgetropfte Pasta mit der Soße vermengen, mit frischem Basilikum servieren.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECIPE 2 -->
+      <div class="recipe-card" onclick="toggleRecipe(this)">
+        <div class="recipe-header">
+          <div class="recipe-emoji">🧀</div>
+          <div class="recipe-info">
+            <div class="recipe-name">Emmentaler-Toast mit Ei</div>
+            <div class="recipe-desc">Käse verwerten bevor er abläuft</div>
+            <div class="recipe-meta">
+              <span class="recipe-tag urgent">⚠ Emmentaler morgen</span>
+              <span class="recipe-tag">10 Min.</span>
+            </div>
+          </div>
+          <div class="recipe-chevron">⌄</div>
+        </div>
+        <div class="recipe-body">
+          <div class="recipe-body-inner">
+            <div class="recipe-cook-meta">
+              <div class="cook-stat"><span>⏱</span><div><strong>10 Min.</strong><br>gesamt</div></div>
+              <div class="cook-stat"><span>👤</span><div><strong>1</strong><br>Person</div></div>
+              <div class="cook-stat"><span>⚡</span><div><strong>Einfach</strong><br>Schwierigkeit</div></div>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zutaten</div>
+              <ul class="ingredient-list">
+                <li class="ingredient-item"><span>Emmentaler – Züger</span><span class="ingredient-amount">80g</span></li>
+                <li class="ingredient-item"><span>Toastbrot</span><span class="ingredient-amount">2 Scheiben</span></li>
+                <li class="ingredient-item"><span>Ei</span><span class="ingredient-amount">1 Stück</span></li>
+                <li class="ingredient-item"><span>Butter</span><span class="ingredient-amount">1 TL</span></li>
+                <li class="ingredient-item"><span>Salz & Pfeffer</span><span class="ingredient-amount">nach Geschmack</span></li>
+              </ul>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zubereitung</div>
+              <div class="step-item"><div class="step-num">1</div><div class="step-text">Toast im Toaster oder in der Pfanne goldbraun rösten.</div></div>
+              <div class="step-item"><div class="step-num">2</div><div class="step-text">Emmentaler reiben und auf dem heißen Toast verteilen, schmelzen lassen.</div></div>
+              <div class="step-item"><div class="step-num">3</div><div class="step-text">Ei in Butter Spiegelei braten, auf den Käsetoast legen.</div></div>
+              <div class="step-item"><div class="step-num">4</div><div class="step-text">Mit Salz und Pfeffer würzen und sofort servieren.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECIPE 3 -->
+      <div class="recipe-card" onclick="toggleRecipe(this)">
+        <div class="recipe-header">
+          <div class="recipe-emoji">🍗</div>
+          <div class="recipe-info">
+            <div class="recipe-name">Hähnchen-Erbsen-Pfanne</div>
+            <div class="recipe-desc">Proteinreich & einfach</div>
+            <div class="recipe-meta">
+              <span class="recipe-tag">25 Min.</span>
+              <span class="recipe-tag">Hauptgericht</span>
+            </div>
+          </div>
+          <div class="recipe-chevron">⌄</div>
+        </div>
+        <div class="recipe-body">
+          <div class="recipe-body-inner">
+            <div class="recipe-cook-meta">
+              <div class="cook-stat"><span>⏱</span><div><strong>25 Min.</strong><br>gesamt</div></div>
+              <div class="cook-stat"><span>👤</span><div><strong>2</strong><br>Personen</div></div>
+              <div class="cook-stat"><span>⚡</span><div><strong>Mittel</strong><br>Schwierigkeit</div></div>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zutaten</div>
+              <ul class="ingredient-list">
+                <li class="ingredient-item"><span>Hähnchenbrustfilet – Wiesenhof</span><span class="ingredient-amount">300g</span></li>
+                <li class="ingredient-item"><span>Tiefkühlerbsen – Birds Eye</span><span class="ingredient-amount">200g</span></li>
+                <li class="ingredient-item"><span>Basmati Reis – Uncle Ben's</span><span class="ingredient-amount">200g</span></li>
+                <li class="ingredient-item"><span>Sojasauce</span><span class="ingredient-amount">2 EL</span></li>
+                <li class="ingredient-item"><span>Knoblauch</span><span class="ingredient-amount">2 Zehen</span></li>
+                <li class="ingredient-item"><span>Öl</span><span class="ingredient-amount">2 EL</span></li>
+              </ul>
+            </div>
+            <div class="recipe-section">
+              <div class="recipe-section-title">Zubereitung</div>
+              <div class="step-item"><div class="step-num">1</div><div class="step-text">Reis nach Packungsanweisung kochen (ca. 15 Min.).</div></div>
+              <div class="step-item"><div class="step-num">2</div><div class="step-text">Hähnchen in Streifen schneiden, mit Salz und Pfeffer würzen.</div></div>
+              <div class="step-item"><div class="step-num">3</div><div class="step-text">In Öl bei hoher Hitze 5–6 Min. anbraten, Knoblauch und Erbsen dazugeben.</div></div>
+              <div class="step-item"><div class="step-num">4</div><div class="step-text">Mit Sojasauce ablöschen, 3 Min. weiterbraten. Mit Reis servieren.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('scan', this)">
+      <span class="nav-icon">📷</span>
+      <span class="nav-label">Scannen</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('food', this)">
+      <span class="nav-icon">🧺</span>
+      <span class="nav-label">Lebensmittel</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('shop', this)">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Einkaufsliste</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('recipes', this)">
+      <span class="nav-icon">🍳</span>
+      <span class="nav-label">Rezepte</span>
+    </button>
+  </div>
+
+  <!-- TOAST (auto-add to shopping list) -->
+  <div class="toast" id="toast">
+    <div class="toast-msg" id="toast-msg">Möchtest du <strong></strong> auf deine Einkaufsliste setzen?</div>
+    <div class="toast-actions">
+      <button class="toast-btn toast-yes" onclick="addToShopFromToast()">Ja, hinzufügen</button>
+      <button class="toast-btn toast-no" onclick="closeToast()">Nein danke</button>
+    </div>
+  </div>
+
+  <!-- CAMERA MODAL -->
+  <div class="modal-overlay" id="camera-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Barcode scannen</div>
+      <div class="camera-viewfinder">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <div class="scan-line"></div>
+        <div class="camera-frame-corner corner-tl"></div>
+        <div class="camera-frame-corner corner-tr"></div>
+        <div class="camera-frame-corner corner-bl"></div>
+        <div class="camera-frame-corner corner-br"></div>
+      </div>
+      <p class="camera-hint">Halte den Barcode in den Rahmen</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('camera-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="simulateScan()">📸 Scannen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Kassenzettel scannen</div>
+      <div class="camera-viewfinder">
+        <video id="receipt-feed" autoplay playsinline muted></video>
+        <div class="camera-frame-corner corner-tl"></div>
+        <div class="camera-frame-corner corner-tr"></div>
+        <div class="camera-frame-corner corner-bl"></div>
+        <div class="camera-frame-corner corner-br"></div>
+      </div>
+      <p class="camera-hint">Fotografiere deinen gesamten Kassenzettel</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('receipt-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="simulateReceiptScan()">📸 Foto aufnehmen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PANEL -->
+  <div class="profile-overlay" id="profile-overlay" onclick="closeProfileOutside(event)">
+    <div class="profile-panel">
+      <div class="profile-avatar">👤</div>
+      <div class="profile-name">Max Mustermann</div>
+      <div class="profile-email">max@email.de</div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Ernährung</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Vegan</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Vegetarisch</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Glutenfrei</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Unverträglichkeiten</div>
+        <div class="chip-group">
+          <button class="chip" onclick="this.classList.toggle('selected')">Laktose</button>
+          <button class="chip selected" onclick="this.classList.toggle('selected')">Gluten</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">Nüsse</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">Fisch</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">Soja</button>
+          <button class="chip" onclick="this.classList.toggle('selected')">Eier</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Benachrichtigungen</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">MHD-Warnungen</div>
+            <div class="setting-sub">3 Tage vorher</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Einkaufsliste-Erinnerung</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+    </div>
+    <button class="profile-close" onclick="toggleProfile()">✕</button>
+  </div>
+
+</div><!-- end phone-frame -->
+
+<script>
+  // TAB SWITCHING
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // STORAGE FILTER
+  function filterStorage(btn, type) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const sections = document.querySelectorAll('#food-list > div[data-storage]');
+    sections.forEach(s => {
+      s.style.display = (type === 'all' || s.dataset.storage === type) ? 'block' : 'none';
+    });
+  }
+
+  // DELETE FOOD ITEM
+  function deleteItem(btn) {
+    const card = btn.closest('.food-card');
+    card.style.transition = 'opacity 0.2s, transform 0.2s';
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(20px)';
+    setTimeout(() => card.remove(), 200);
+  }
+
+  // CONSUME ITEM
+  let toastItem = '';
+  function consumeItem(inputId, total, unit, name) {
+    const input = document.getElementById(inputId);
+    const val = parseFloat(input.value);
+    if (!val || val <= 0) { input.style.borderColor='var(--warn)'; setTimeout(()=>input.style.borderColor='',1000); return; }
+    const remaining = Math.max(0, total - val);
+    const card = input.closest('.food-card');
+    const brandEl = card.querySelector('.food-brand');
+    const parts = brandEl.textContent.split('·');
+    brandEl.textContent = parts[0].trim() + ' · ' + remaining + unit;
+    input.value = '';
+    if (remaining <= 0) {
+      toastItem = name;
+      showToast(name);
+      setTimeout(() => deleteItem(card.querySelector('.icon-btn.trash')), 500);
+    }
+  }
+
+  // TOAST
+  function showToast(name) {
+    const toast = document.getElementById('toast');
+    document.querySelector('#toast-msg strong').textContent = name;
+    toast.classList.add('show');
+    setTimeout(() => { if (toast.classList.contains('show')) closeToast(); }, 8000);
+  }
+  function closeToast() { document.getElementById('toast').classList.remove('show'); }
+  function addToShopFromToast() {
+    addShopItemByName(toastItem);
+    closeToast();
+  }
+
+  // SHOPPING LIST
+  function toggleCheck(btn) {
+    btn.closest('.shop-item').classList.toggle('checked');
+  }
+  function deleteShopItem(btn) {
+    const item = btn.closest('.shop-item');
+    item.style.transition = 'opacity 0.2s'; item.style.opacity = '0';
+    setTimeout(() => item.remove(), 200);
+  }
+  function addShopItem() {
+    const input = document.getElementById('shop-input');
+    if (!input.value.trim()) return;
+    addShopItemByName(input.value.trim());
+    input.value = '';
+  }
+  function addShopItemByName(name) {
+    const section = document.getElementById('manual-section-title');
+    const container = document.getElementById('manual-shop-items');
+    section.style.display = 'block';
+    const id = 'si-' + Date.now();
+    const div = document.createElement('div');
+    div.className = 'shop-item'; div.id = id;
+    div.innerHTML = `<button class="shop-check" onclick="toggleCheck(this)">✓</button>
+      <div class="shop-item-info"><div class="shop-item-name">${name}</div></div>
+      <span class="shop-item-qty">1×</span>
+      <button class="shop-delete-btn" onclick="deleteShopItem(this)">🗑️</button>`;
+    container.appendChild(div);
+  }
+
+  // MANUAL ADD
+  function addManualItem() {
+    const input = document.getElementById('manual-input');
+    if (!input.value.trim()) return;
+    const msg = document.getElementById('manual-added');
+    msg.style.display = 'block';
+    input.value = '';
+    setTimeout(() => msg.style.display='none', 2000);
+  }
+
+  // MODALS
+  let activeStream = null;
+  async function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    const videoId = id === 'camera-modal' ? 'camera-feed' : 'receipt-feed';
+    const videoEl = document.getElementById(videoId);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      videoEl.srcObject = stream;
+      activeStream = stream;
+    } catch(e) {
+      videoEl.style.background = '#222';
+    }
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
+  }
+  function simulateScan() {
+    closeModal('camera-modal');
+    const msg = document.getElementById('manual-added');
+    msg.textContent = '✓ Produkt gescannt & hinzugefügt!';
+    msg.style.display = 'block';
+    switchTab('scan', document.querySelector('.nav-item'));
+    setTimeout(() => { msg.style.display='none'; msg.textContent='✓ Produkt hinzugefügt!'; }, 2500);
+  }
+  function simulateReceiptScan() {
+    closeModal('receipt-modal');
+    const msg = document.getElementById('manual-added');
+    msg.textContent = '✓ Kassenzettel erkannt! 5 Produkte hinzugefügt.';
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display='none'; msg.textContent='✓ Produkt hinzugefügt!'; }, 3000);
+  }
+
+  // RECIPE TOGGLE
+  function toggleRecipe(card) {
+    card.classList.toggle('open');
+  }
+
+  // MEALPLAN
+  function toggleMealplan() {
+    const s = document.getElementById('mealplan-section');
+    s.style.display = s.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // PROFILE
+  function toggleProfile() {
+    document.getElementById('profile-overlay').classList.toggle('open');
+  }
+  function closeProfileOutside(e) {
+    if (e.target === document.getElementById('profile-overlay')) toggleProfile();
+  }
+</script>
+</body>
+</html>
